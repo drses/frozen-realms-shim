@@ -15,7 +15,29 @@
 var FS = require("fs");
 var VM = require("vm");
 
-var initSES = [
+var prelude = `
+// This severity is too high for any use other than development.
+var ses = {maxAcceptableSeverityName: 'NEW_SYMPTOM'};
+`;
+
+var testCases = `
+(${function() {
+  "use strict";
+  try {
+    Object.prototype.hasOwnProperty = 7;
+  } catch (er) {
+    console.log(er);
+  }
+  console.log(Object.prototype.hasOwnProperty);
+}}());
+
+(${function() {
+  "use strict";
+  console.log(cajaVM.confine('x + y', {x: 3, y: 4}));
+}}());
+`;
+
+var initSES = prelude + [
     "logger.js",
     "repair-framework.js",
     "repairES5.js",
@@ -28,8 +50,8 @@ var initSES = [
     "ejectorsGuardsTrademarks.js",
     "hookupSESPlus.js",
 ].map(function (path) {
-    return FS.readFileSync(path, 'utf8')
-}).join('\n');
+    return FS.readFileSync(path, 'utf8');
+}).join('\n') + testCases;
 
 var global = {};
 global.console = console;
