@@ -15,17 +15,9 @@
 var FS = require("fs");
 var VM = require("vm");
 
-var context = VM.createContext({
-    console: console,
-    hack: function (cajaVM) {
-        console.log(cajaVM);
-        var f = cajaVM.compileExpr("console.log('hi')");
-        f({console: console});
-    }
-});
-
-[
+var initSES = [
     "logger.js",
+    "repair-framework.js",
     "repairES5.js",
     "WeakMap.js",
     "debug.js",
@@ -35,9 +27,12 @@ var context = VM.createContext({
     "startSES.js",
     "ejectorsGuardsTrademarks.js",
     "hookupSESPlus.js",
-].forEach(function (path) {
-    console.log("Running: " + path);
-    VM.runInContext(FS.readFileSync(path), context, path);
-});
+].map(function (path) {
+    return FS.readFileSync(path, 'utf8')
+}).join('\n');
 
-VM.runInContext("hack(cajaVM)", context);
+var global = {};
+global.console = console;
+global.global = global;
+var context = VM.createContext(global);
+VM.runInContext(initSES, context);
