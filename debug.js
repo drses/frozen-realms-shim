@@ -516,4 +516,4 @@ var ses;
    };
    ses.getStack = getStack;
 
- })(this);
+ })(global);

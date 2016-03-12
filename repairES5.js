@@ -5952,4 +5952,4 @@ var ses;
 
   logger.reportMax();
 
-})(this);
+})(global);

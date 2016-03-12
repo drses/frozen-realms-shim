@@ -44,4 +44,4 @@
     // Balanced by beginStartup in logger.js
     ses.logger.endStartup();
   }
-})(this);
+})(global);
