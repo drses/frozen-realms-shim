@@ -46,14 +46,14 @@ ses.maxAcceptableSeverityName = 'NEW_SYMPTOM';
   var initSESPlus = prelude + sesPlusFiles.map(function (path) {
     return FS.readFileSync(path, 'utf8');
   }).join('\n') + `
-cajaVM.confine;
+cajaVM;
 `;
   
   var global = {};
   global.console = console;
   global.global = global;
   var context = VM.createContext(global);
-  var confine = VM.runInContext(initSESPlus, context);
+  var cajaVM = VM.runInContext(initSESPlus, context);
 
-  return { confine };
+  return cajaVM;
 }());
