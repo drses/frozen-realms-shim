@@ -28,7 +28,7 @@
   "use strict";
 
   // Still valid. Won't be after startSES is called.
-  var global = (new Function('return this;'))();
+  var global = (1,eval)('this');
 
   try {
     if (!ses.okToLoad()) {
