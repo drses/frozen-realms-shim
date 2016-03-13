@@ -22,7 +22,7 @@ ses.maxAcceptableSeverityName = 'NEW_SYMPTOM';
 
 (${function() {
   "use strict";
-  console.log('a ', global === (new Function('return this;')()));
+  console.log('a ', global === (1,eval)('this'));
 }}());
 `;
 
@@ -42,6 +42,7 @@ var testCases = `
   console.log(cajaVM.confine('x + y', {x: 3, y: 4}));
 }}());
 
+cajaVM.confine
 `;
 
 var sesFiles = [
@@ -78,4 +79,5 @@ var global = {};
 global.console = console;
 global.global = global;
 var context = VM.createContext(global);
-VM.runInContext(initSES, context);
+var ret = VM.runInContext(initSES, context);
+console.log('ret: ', ret);

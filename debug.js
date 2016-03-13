@@ -94,7 +94,7 @@ var ses;
    "use strict";
 
    // Still valid. Won't be after startSES is called.
-   var global = (new Function('return this;'))();
+   var global = (1,eval)('this');
 
    if (typeof ses !== 'undefined' && ses.okToLoad && !ses.okToLoad()) {
      // already too broken, so give up
