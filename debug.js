@@ -90,8 +90,11 @@
 var Error;
 var ses;
 
-(function debugModule(global) {
+(function debugModule() {
    "use strict";
+
+   // Still valid. Won't be after startSES is called.
+   var global = (new Function('return this;'))();
 
    if (typeof ses !== 'undefined' && ses.okToLoad && !ses.okToLoad()) {
      // already too broken, so give up
@@ -516,4 +519,4 @@ var ses;
    };
    ses.getStack = getStack;
 
- })(global);
+ }());

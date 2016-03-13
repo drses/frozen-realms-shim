@@ -17,7 +17,13 @@ var VM = require("vm");
 
 var prelude = `
 // This severity is too high for any use other than development.
-var ses = {maxAcceptableSeverityName: 'NEW_SYMPTOM'};
+var ses = ses || {};
+ses.maxAcceptableSeverityName = 'NEW_SYMPTOM';
+
+(${function() {
+  "use strict";
+  console.log('a ', global === (new Function('return this;')()));
+}}());
 `;
 
 var testCases = `
@@ -35,9 +41,22 @@ var testCases = `
   "use strict";
   console.log(cajaVM.confine('x + y', {x: 3, y: 4}));
 }}());
+
 `;
 
-var initSES = prelude + [
+var sesFiles = [
+    "logger.js",
+    "repair-framework.js",
+    "repairES5.js",
+    "WeakMap.js",
+    "StringMap.js",
+    "whitelist.js",
+    "atLeastFreeVarNames.js",
+    "startSES.js",
+    "hookupSES.js",
+];
+
+var sesPlusFiles = [
     "logger.js",
     "repair-framework.js",
     "repairES5.js",
@@ -49,7 +68,9 @@ var initSES = prelude + [
     "startSES.js",
     "ejectorsGuardsTrademarks.js",
     "hookupSESPlus.js",
-].map(function (path) {
+];
+
+var initSES = prelude + sesPlusFiles.map(function (path) {
     return FS.readFileSync(path, 'utf8');
 }).join('\n') + testCases;
 

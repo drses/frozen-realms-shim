@@ -95,8 +95,11 @@ var ses;
  * runs in a SES frame, and so can avoid worrying about most of these
  * perturbations.
  */
-(function repairES5Module(global) {
+(function repairES5Module() {
   "use strict";
+
+  // Still valid. Won't be after startSES is called.
+  var global = (new Function('return this;'))();
 
   var logger = ses.logger;
   var EarlyStringMap = ses._EarlyStringMap;
@@ -5952,4 +5955,4 @@ var ses;
 
   logger.reportMax();
 
-})(global);
+}());

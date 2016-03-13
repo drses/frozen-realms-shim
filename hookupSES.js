@@ -24,8 +24,11 @@
  * @overrides ses, hookupSESModule
  */
 
-(function hookupSESModule(global) {
+(function hookupSESModule() {
   "use strict";
+
+  // Still valid. Won't be after startSES is called.
+  var global = (new Function('return this;'))();
 
   try {
     if (!ses.okToLoad()) {
@@ -44,4 +47,4 @@
     // Balanced by beginStartup in logger.js
     ses.logger.endStartup();
   }
-})(global);
+}());
