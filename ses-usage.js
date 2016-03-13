@@ -16,8 +16,8 @@ var FS = require("fs");
 var VM = require("vm");
 
 var prelude = `
-// This severity is too high for any use other than development.
 var ses = ses || {};
+// This severity is too high for any use other than development.
 ses.maxAcceptableSeverityName = 'NEW_SYMPTOM';
 
 (${function() {
