@@ -780,7 +780,5 @@ var ses;
                     // but doing so while preserving encapsulation will be
                     // needlessly expensive for current usage.
     }
-
-
   };
 })();
