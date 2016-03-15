@@ -1766,7 +1766,7 @@ ses.startSES = function(global,
 
     if (newValue === token) {
       reportProperty(ses.severities.NEW_SYMPTOM,
-                     'Globals wre not made readonly', name);
+                     'Globals were not made readonly', name);
     }
     if (!ses.is(newValue, oldValue)) {
       reportProperty(ses.severities.NEW_SYMPTOM,

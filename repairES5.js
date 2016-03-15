@@ -27,7 +27,7 @@
  * create it, use it, and delete it all within this module. But we
  * need to lie to the linter since it can't tell.
  *
- * //requires ses.logger, ses._EarlyStringMap,
+ * //requires ses.logger
  * //requires ses.severities, ses.statuses, ses._repairer
  * //optionally requires ses.mitigateSrcGotchas, ses._primordialsHaveBeenFrozen
  * //provides ses.ok, ses.okToLoad, ses.getMaxSeverity, ses.updateMaxSeverity
@@ -45,7 +45,7 @@
  * @requires JSON, eval, this
  * @requires navigator, document, DOMException
  * @overrides ses, repairES5Module
- * @overrides RegExp, WeakMap, Object, parseInt
+ * @overrides RegExp, Object, parseInt
  */
 var RegExp;
 var ses;
@@ -102,8 +102,7 @@ var ses;
   var global = (1,eval)('this');
 
   var logger = ses.logger;
-  var EarlyStringMap = ses._EarlyStringMap;
-
+  
   var severities = ses.severities;
   var statuses = ses.statuses;
 
@@ -1061,7 +1060,7 @@ var ses;
    *
    * Maps each blacklisted standinName to 'blacklisted'.
    */
-  var standinMakerCache = EarlyStringMap();
+  var standinMakerCache = new Map();
   (function(){
      /**
       * See <a href=
@@ -2978,7 +2977,7 @@ var ses;
     'stack',
     'stacktrace'
   ];
-  var errorInstanceWhiteMap = new EarlyStringMap();
+  var errorInstanceWhiteMap = new Map();
   strictForEachFn(errorInstanceWhitelist, function(name) {
     errorInstanceWhiteMap.set(name, true);
   });
@@ -3053,7 +3052,7 @@ var ses;
     try { null.foo = 3; } catch (err) { errors.push(err); }
     for (var i = 0; i < errors.length; i++) {
       var err = errors[i];
-      var found = new EarlyStringMap();
+      var found = new Map();
       strictForEachFn(gopn(err), function (prop) {
         found.set(prop, true);
       });

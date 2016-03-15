@@ -17,8 +17,7 @@
  * features. Applies only necessary patches and verifies they succeeded.
  *
  * //requires ses.acceptableProblems, ses.maxAcceptableSeverityName
- * //provides ses.statuses, ses.severities, ses._Repairer, ses._repairer,
- * //    ses._EarlyStringMap
+ * //provides ses.statuses, ses.severities, ses._Repairer, ses._repairer
  *
  * @author Mark S. Miller
  * @author Kevin Reid
@@ -159,41 +158,6 @@ var ses;
     return result;
   }
 
-  /**
-   * The Repairer and several test/repair routines want string-keyed maps.
-   * Unfortunately, our exported StringMap is not yet available, and our repairs
-   * include one which breaks Object.create(null). So, an ultra-minimal,
-   * ES3-compatible implementation.
-   */
-  function EarlyStringMap() {
-    var objAsMap = {};
-    var self = {
-      get: function(key) {
-        return objAsMap[key + '$'];
-      },
-      set: function(key, value) {
-        objAsMap[key + '$'] = value;
-      },
-      has: function(key) {
-        return (key + '$') in objAsMap;
-      },
-      'delete': function(key) {
-        return delete objAsMap[key + '$'];
-      },
-      forEach: function(callback) {
-        for (var key in objAsMap) {
-          if (key.lastIndexOf('$') === key.length - 1) {
-            callback(objAsMap[key], key.slice(0, -1), self);
-          }
-        }
-      }
-    };
-    return self;
-  }
-
-  // Exported for use in repairES5.js.
-  ses._EarlyStringMap = EarlyStringMap;
-
   //////// The repairer /////////
 
   /**
@@ -267,37 +231,37 @@ var ses;
      *
      * These records are never exposed to clients.
      */
-    var problemRecords = new EarlyStringMap();
+    var problemRecords = new Map();
 
     /**
      * All problem records whose test/repair/report steps have not yet been
      * executed; a subset of problemRecords.
      */
-    var notDoneProblems = new EarlyStringMap();
+    var notDoneProblems = new Map();
 
     /**
      * This is all problems which have not been either repaired or shown not to
      * be present.
      */
-    var yetToRepair = new EarlyStringMap();
+    var yetToRepair = new Map();
 
     /**
      * Outcomes of the earliest test run (before repairs). Keys are problem IDs
      * and values are return values of test functions.
      */
-    var earliestTests = new EarlyStringMap();
+    var earliestTests = new Map();
 
     /**
      * Outcomes of the latest test run (after repairs, or before repairs if
      * repairs have not been run yet). Keys are problem IDs and values are
      * return values of test functions.
      */
-    var latestTests = new EarlyStringMap();
+    var latestTests = new Map();
 
     /**
      * For reporting; contains the same keys as latestTests.
      */
-    var reports = new EarlyStringMap();
+    var reports = new Map();
 
     /**
      * All repair functions which have been executed and therefore should not

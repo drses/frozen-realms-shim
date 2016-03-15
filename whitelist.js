@@ -519,10 +519,45 @@ var ses;
         length: '*'
       }
     },
-    // 23.1 #sec-map-objects
-    // Map: {...}                    // ES2015 not yet
-    // 23.2 #sec-set-objects
-    // Set: {...}                    // ES2015 not yet
+    Map: {                           // ES2015
+      // 23.1.2 #sec-properties-of-the-map-constructor
+      // [Symbol.species]            // ES2015 no symbols yet
+
+      // 23.1.3 #sec-properties-of-the-map-prototype-object
+      prototype: {
+        clear: t,
+        'delete': t,
+        entries: t,
+        forEach: t,
+        get: t,
+        has: t,
+        keys: t,
+        set: t,
+        size: 'maybeAccessor',
+        values: t
+        // [Symbol.iterator]           // ES2015 no symbols yet
+        // [Symbol.toStringTag]        // ES2015 no symbols yet
+      }
+    },
+    Set: {                           // ES2015
+      // 23.2.2 #sec-properties-of-the-set-constructor
+      // [Symbol.species]            // ES2015 no symbols yet
+
+      // 23.2.3 #sec-properties-of-the-set-prototype-object
+      prototype: {
+        add: t,
+        clear: t,
+        'delete': t,
+        entries: t,
+        forEach: t,
+        has: t,
+        keys: t,
+        size: 'maybeAccessor',
+        values: t
+        // [Symbol.iterator]         // ES2015 no symbols yet
+        // {Symbol.toStringTag]      // ES2015 no symbols yet
+      }
+    },
     WeakMap: {                       // ES2015
       // 23.3.3 #sec-properties-of-the-weakmap-prototype-object
       prototype: {
@@ -531,10 +566,18 @@ var ses;
         get: t,
         has: t,
         set: t
+        // [Symbol.toStringTag]      // ES2015 no symbols yet
       }
     },
-    // 23.4.3 #sec-properties-of-the-weakset-prototype-object
-    // Set: {...}                    // ES2015 not yet
+    WeakSet: {                       // ES2015
+      // 23.4.3 #sec-properties-of-the-weakset-prototype-object
+      prototype: {
+        add: t,
+        'delete': t,
+        has: t
+        // [Symbol.toStringTag]      // ES2015 no symbols yet
+      }
+    },
 
     // 24 #sec-structured-data
     // 24.3 #sec-json-object
@@ -632,7 +675,6 @@ var ses;
     unescape: t,                     // ES5 Appendix B
 
 
-
     cajaVM: {                        // Caja support
       // The accessible intrinsics which are not reachable by own
       // property name traversal are listed here so that they are
@@ -661,9 +703,9 @@ var ses;
         // 22.1.5.2 #sec-%arrayiteratorprototype%-object
         ArrayIteratorPrototype: {},
         // 23.1.5.2 #sec-%mapiteratorprototype%-object
-        // MapIteratorPrototype: {},  // ES2015 not yet
+        MapIteratorPrototype: {},
         // 23.2.5.2 #sec-%setiteratorprototype%-object
-        // SetIteratorPrototype: {},  // ES2015 not yet
+        SetIteratorPrototype: {},
 
         // The %GeneratorFunction% intrinsic is the constructor of
         // generator functions, so %GeneratorFunction%.prototype is
@@ -774,11 +816,6 @@ var ses;
       makeArrayLike: {
         canBeFullyLive: t
       }
-    },
-    StringMap: {  // A specialized approximation of ES-Harmony's Map.
-      prototype: {} // Technically, the methods should be on the prototype,
-                    // but doing so while preserving encapsulation will be
-                    // needlessly expensive for current usage.
     }
   };
 })();

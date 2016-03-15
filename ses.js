@@ -9,9 +9,7 @@ var initSES = [
     "logger.js",
     "repair-framework.js",
     "repairES5.js",
-    "WeakMap.js",
     "debug.js",
-    "StringMap.js",
     "whitelist.js",
     "atLeastFreeVarNames.js",
     "startSES.js",
@@ -23,7 +21,6 @@ var initSES = [
 
 var global = {};
 global.console = console;
-global.global = global;
 var context = vm.createContext(global);
 var caja = vm.runInContext(initSES, context);
 

@@ -20,9 +20,7 @@ var src = '';
 [
     "logger.js",
     "repairES5.js",
-    "WeakMap.js",
     "debug.js",
-    "StringMap.js",
     "whitelist.js",
     "atLeastFreeVarNames.js",
     "startSES.js",

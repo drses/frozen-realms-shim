@@ -61,9 +61,7 @@ The <script src="useHTMLLogger.js"> and the inline script above advises
 <script src="logger.js"></script>
 <script src="repair-framework.js"></script>
 <script src="repairES5.js"></script>
-<script src="WeakMap.js"></script>
 <script src="debug.js"></script>
-<script src="StringMap.js"></script>
 <script src="whitelist.js"></script>
 <script src="atLeastFreeVarNames.js"></script>
 <script src="startSES.js"></script>
@@ -309,7 +307,7 @@ The <script src="useHTMLLogger.js"> and the inline script above advises
       return makeTextResource('./' + id + '.js').get();
     }
 
-    var moduleMap = StringMap();
+    var moduleMap = new Map();
     moduleMap.set('Q', Q);
     var loaderP = Q(makeSimpleAMDLoaderP).send(void 0, fetch, moduleMap);
     var amdTestP = Q(loaderP).send(void 0, 'amdTest');

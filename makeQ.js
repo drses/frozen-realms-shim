@@ -41,7 +41,7 @@
  * @author Mark S. Miller, based on earlier designs by Tyler Close,
  * Kris Kowal, and Kevin Reid.
  * @overrides ses
- * @requires WeakMap, cajaVM
+ * @requires cajaVM
  */
 
 var ses;

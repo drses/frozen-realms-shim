@@ -21,9 +21,8 @@
  * <p>NOTE: The currently exposed debugging API is far from
  * settled. This module is currently in an exploratory phase.
  *
- * <p>Meant to be run sometime after repairs are done and a working
- * WeakMap is available, but before startSES.js. initSESPlus.js includes
- * this. initSES.js does not.
+ * <p>Meant to be run sometime after repairs are done but before
+ * startSES.js. initSESPlus.js includes this. initSES.js does not.
  *
  * <p>TODO(erights): Explore alternatives to using "instanceof Error"
  * within this file.  Using "instanceof" makes this fail when used
@@ -83,7 +82,7 @@
  *
  * //provides ses.getCWStack ses.stackString ses.getStack
  * @author Mark S. Miller
- * @requires WeakMap, this
+ * @requires this
  * @overrides Error, ses, debugModule
  */
 

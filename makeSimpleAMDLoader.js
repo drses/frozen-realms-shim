@@ -20,7 +20,7 @@
  *
  * //provides makeSimpleAMDLoader
  * @author Mark S. Miller
- * @requires StringMap, cajaVM
+ * @requires cajaVM
  * @requires this, compileExprLater, Q
  */
 
@@ -92,7 +92,7 @@
     * name-to-instance associations.
     */
    function makeSimpleAMDLoader(fetch, opt_moduleMap) {
-     var moduleMap = opt_moduleMap || StringMap();
+     var moduleMap = opt_moduleMap || new Map();
 
      var loader;
 

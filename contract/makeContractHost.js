@@ -16,7 +16,7 @@
  * @fileoverview Simple AMD module exports a {@code makeContractHost}
  * function, which makes a contract host, which makes and runs a
  * contract. Requires SES and its simple AMD loader.
- * @requires define, WeakMap, Q, cajaVM
+ * @requires define, Q, cajaVM
  * @author Mark S. Miller erights@gmail.com
  */
 define('contract/makeContractHost', ['Q'], function(Q) {

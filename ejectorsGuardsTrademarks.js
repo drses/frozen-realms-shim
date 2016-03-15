@@ -22,7 +22,7 @@
  *
  * // provides ses.ejectorsGuardsTrademarks
  * @author kpreid@switchb.org
- * @requires WeakMap, cajaVM
+ * @requires cajaVM
  * @overrides ses, ejectorsGuardsTrademarksModule
  */
 var ses;
