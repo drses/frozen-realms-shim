@@ -1,3 +1,6 @@
+// Options: --free-variable-checker --require --validate
+/*global require cajaVM*/
+
 // To start SES under nodejs
 // Adapted from https://gist.github.com/3669482
 
@@ -10,70 +13,16 @@
 //     1 Skipped
 //     Max Severity: Safe spec violation(1).
 //     initSES succeeded.
-//    hi
+//    seven: 7
 
-var FS = require("fs");
-var VM = require("vm");
-
-var prelude = `
-var ses = ses || {};
-// This severity is too high for any use other than development.
-ses.maxAcceptableSeverityName = 'NEW_SYMPTOM';
-
-(${function() {
-  "use strict";
-  console.log('a ', global === (1,eval)('this'));
-}}());
-`;
+const ses5 = require('./ses5');
 
 var testCases = `
 (${function() {
   "use strict";
-  try {
-    Object.prototype.hasOwnProperty = 7;
-  } catch (er) {
-    console.log(er);
-  }
-  console.log(Object.prototype.hasOwnProperty);
-}}());
 
-(${function() {
-  "use strict";
-  console.log(cajaVM.confine('x + y', {x: 3, y: 4}));
-}}());
-
-cajaVM.confine
+  cajaVM.log('seven: ' + cajaVM.confine('x + y', {x: 3, y: 4}));
+}}())
 `;
 
-var sesFiles = [
-    "logger.js",
-    "repair-framework.js",
-    "repairES5.js",
-    "whitelist.js",
-    "atLeastFreeVarNames.js",
-    "startSES.js",
-    "hookupSES.js",
-];
-
-var sesPlusFiles = [
-    "logger.js",
-    "repair-framework.js",
-    "repairES5.js",
-    "debug.js",
-    "whitelist.js",
-    "atLeastFreeVarNames.js",
-    "startSES.js",
-    "ejectorsGuardsTrademarks.js",
-    "hookupSESPlus.js",
-];
-
-var initSES = prelude + sesPlusFiles.map(function (path) {
-    return FS.readFileSync(path, 'utf8');
-}).join('\n') + testCases;
-
-var global = {};
-global.console = console;
-global.global = global;
-var context = VM.createContext(global);
-var ret = VM.runInContext(initSES, context);
-console.log('ret: ', ret);
+ses5.confine(testCases, {});
