@@ -1,3 +1,5 @@
+// Options: --free-variable-checker --require --validate
+/*global navigator, document, DOMException, require*/
 // Copyright (C) 2011 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +34,7 @@
  * //optionally requires ses.mitigateSrcGotchas, ses._primordialsHaveBeenFrozen
  * //provides ses.ok, ses.okToLoad, ses.getMaxSeverity, ses.updateMaxSeverity
  * //provides ses.is, ses.makeDelayedTamperProof
- * //provides ses.isInBrowser
+ * //provides ses.isInBrowser, ses.isInNodeJS, ses.inFreshRealm
  * //provides ses.makeCallerHarmless, ses.makeArgumentsHarmless
  * //provides ses.noFuncPoison
  * //provides ses.verifyStrictFunctionBody
@@ -43,7 +45,7 @@
  * @author Mark S. Miller
  * @requires ___global_test_function___, ___global_valueOf_function___
  * @requires JSON, eval, this
- * @requires navigator, document, DOMException
+ * @requires navigator, document, DOMException, require
  * @overrides ses, repairES5Module
  * @overrides RegExp, Object, parseInt
  */
@@ -102,7 +104,7 @@ var ses;
   var global = (1,eval)('this');
 
   var logger = ses.logger;
-  
+
   var severities = ses.severities;
   var statuses = ses.statuses;
 
@@ -1304,8 +1306,9 @@ var ses;
    *
    * <p>Currently, we assume we are in a browser environment iff there
    * is a non-undefined <code>document</code> and
-   * <code>document.createElement</code> is callable. We may use
-   * better evidence in the future.
+   * <code>document.createElement</code> is callable. We choose this
+   * form of evidence (at least for now) because that is what
+   * <code>inFreshRealm</code> uses to create a new realm.
    */
   function isInBrowser() {
     return typeof document !== 'undefined' &&
@@ -1314,40 +1317,78 @@ var ses;
   ses.isInBrowser = isInBrowser;
 
   /**
-   * Create a new iframe and pass its 'window' object to the provided
-   * callback.  If the environment is not a browser, return undefined
-   * and do not call the callback.
+   * Do we seem to be in a NodeJS environment?
    *
-   * <p>inTestFrame assumes we are in a browser according to
-   * <code>isInBrowser</code> above. If so, it creates an iframe,
-   * makes it a child somewhere of the current document, calls the
-   * callback, passing that iframe's window, and then removes the
-   * iframe.
-   *
-   * <p>A typical callback will then create a
-   * function within that other frame, to be used later to test
-   * cross-frame operations. However, on IE10 on Windows, this iframe
-   * removal may then prevent that created function from running at
-   * that later time, with a "Error: Can't execute code from a freed
-   * script" error.
+   * <p>Currently, we assume we are in a NodeJS environment iff there
+   * is a callable <code>require</code> from which we can import a
+   * <code>'vm'</code> module containing a callable
+   * <code>createContext</code> and <code>runInContext</code>
+   * functions. We choose this form of evidence (at least for now)
+   * because that is what <code>inFreshRealm</code> uses to create a
+   * new realm.
    */
-  function inTestFrame(callback) {
-    if (!isInBrowser()) {
+  function isInNodeJS() {
+    VM = require('vm');
+    if (typeof require !== 'function') {
+      return false;
+    }
+    var VM;
+    try {
+      VM = require('vm');
+    } catch (er) {
+      return false;
+    }
+    return VM !== void 0 &&
+      typeof VM.createContext === 'function' &&
+      typeof VM.runInContext === 'function';
+  }
+  ses.isInNodeJS = isInNodeJS;
+
+  /**
+   * Create a new realm if we know how and pass its global object to
+   * the provided callback.  If the environment is not one in which we
+   * know how to create a new realm, return undefined and do not call
+   * the callback.
+   *
+   * <p>If <code>inFreshRealm</code> detects we are in a browser
+   * according to <code>isInBrowser</code> above. If so, it creates a
+   * same-origin iframe, makes it a child somewhere of the current
+   * document, calls the callback, passing that iframe's window, and
+   * then removes the iframe.
+   *
+   * <p>A typical callback will then create a function within that
+   * other realm, to be used later to test cross-realm
+   * operations. However, on IE10 on Windows, the removal of the
+   * created iframe may then prevent that created function from
+   * running at that later time, with a "Error: Can't execute code
+   * from a freed script" error.
+   */
+  function inFreshRealm(callback) {
+    if (isInBrowser()) {
+      var iframe = document.createElement('iframe');
+      // TODO(erights): Four choices for where to put the iframe seems
+      // like a lot. How many of these have been, or even can be,
+      // tested? Can we kill the ones we cannot test?
+      var container = document.body ||
+            document.getElementsByTagName('head')[0] ||
+            document.documentElement || document;
+      container.appendChild(iframe);
+      try {
+        return callback(iframe.contentWindow);
+      } finally {
+        container.removeChild(iframe);
+      }
+    } else if (isInNodeJS()) {
+      var endowments = {console: console};
+      var VM = require('vm');
+      var context = VM.createContext(endowments);
+      var freshGlobal = VM.runInContext('eval("this")', context);
+      return callback(freshGlobal);
+    } else {
       return undefined;
     }
-    var iframe = document.createElement('iframe');
-    // Four choices for where to put the iframe seems like a lot. How
-    // many of these have been, or even can be, tested? Can we kill
-    // the ones we cannot test?
-    var container = document.body || document.getElementsByTagName('head')[0] ||
-        document.documentElement || document;
-    container.appendChild(iframe);
-    try {
-      return callback(iframe.contentWindow);
-    } finally {
-      container.removeChild(iframe);
-    }
   }
+  ses.inFreshRealm = inFreshRealm;
 
   /**
    * Problem visible in Chrome 27.0.1428.0 canary and 27.0.1453.15 beta:
@@ -1363,7 +1404,7 @@ var ses;
     if (Object.isFrozen(Object.prototype)) {
       testObject = Object;
     } else {
-      testObject = inTestFrame(function(window) { return window.Object; });
+      testObject = inFreshRealm(function(window) { return window.Object; });
       if (!testObject) { return false; }  // not in a web browser
 
       // Apply the repair which should fix the problem to the testing frame.
@@ -1407,7 +1448,7 @@ var ses;
       // No WeakMap, or it has been "repaired", so no need
       return false;
     } else {
-      var result = inTestFrame(function(window) {
+      var result = inFreshRealm(function(window) {
         // trigger problem
         var wm1 = new window.WeakMap();
         wm1.set(window.Object.prototype, true);
@@ -2863,10 +2904,12 @@ var ses;
     // This test is extensive because it needs to verify not just the behavior
     // of the known problem, but that our repair for it was adequate.
 
-    var other = inTestFrame(function(window) { return {
-      Object: window.Object,
-      mutator: window.Function('o', 'o.x = 1;')
-    }; });
+    var other = inFreshRealm(function(window) {
+      return {
+        Object: window.Object,
+        mutator: window.Function('o', 'o.x = 1;')
+      };
+    });
     if (!other) { return false; }
 
     var frozenInOtherFrame = other.Object();
@@ -3341,7 +3384,7 @@ var ses;
    */
   function test_TYPED_ARRAY_PROTOS_LOOK_UNFROZEN() {
     // note: cannot test without frames
-    return inTestFrame(function(window) {
+    return inFreshRealm(function(window) {
       // Apply the repair which should fix the problem to the testing frame.
       // TODO(kpreid): Design a better architecture to handle cases like this
       // than one-off state flags.
@@ -3717,6 +3760,15 @@ var ses;
     if (a.randomProperty !== someVar || a.length1 !== someVar) {
       return 'Did not extend correctly: ' + a;
     }
+    return true;
+  }
+
+  /**
+   * Tests for https://github.com/nodejs/node/issues/5679
+   * which is a node specific bug that prevents global variables from
+   * being made non-writable, non-configurable data properties.
+   */
+  function test_XXX() {
     return true;
   }
 
@@ -5798,6 +5850,18 @@ var ses;
       canRepair: true,
       urls: ['https://bugzilla.mozilla.org/show_bug.cgi?id=1125389',
              'https://code.google.com/p/google-caja/issues/detail?id=1954'],
+      sections: [],
+      tests: []
+    },
+    {
+      id: 'XXX',
+      description: 'xxx',
+      test: test_XXX,
+      repair: void 0,
+      preSeverity: severities.UNSAFE_SPEC_VIOLATION,
+      canRepair: false,
+      urls: ['https://github.com/nodejs/node/issues/5679',
+             'https://github.com/nodejs/node/issues/5344'],
       sections: [],
       tests: []
     }

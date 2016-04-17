@@ -1,5 +1,5 @@
 // Options: --free-variable-checker --require --validate
-/*global module require global cajaVM*/
+/*global require cajaVM*/
 
 // To start SES under nodejs
 // Adapted from https://gist.github.com/3669482
@@ -13,7 +13,7 @@
 //     1 Skipped
 //     Max Severity: Safe spec violation(1).
 //     initSES succeeded.
-//    hi
+//    seven: 7
 
 const ses5 = require('./ses5');
 
@@ -21,14 +21,7 @@ var testCases = `
 (${function() {
   "use strict";
 
-  try {
-    Object.prototype.hasOwnProperty = 7;
-  } catch (er) {
-    cajaVM.log(er);
-  }
-  cajaVM.log(Object.prototype.hasOwnProperty);
-
-  cajaVM.log(cajaVM.confine('x + y', {x: 3, y: 4}));
+  cajaVM.log('seven: ' + cajaVM.confine('x + y', {x: 3, y: 4}));
 }}())
 `;
 

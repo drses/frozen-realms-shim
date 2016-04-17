@@ -7,10 +7,17 @@
 
 module.exports = (function(){
   "use strict";
-  
+
   var FS = require("fs");
   var VM = require("vm");
-  
+  function fakeRequire(name) {
+    if (name !== 'vm') {
+      throw new Error(`Cannot fake module '${name}'`);
+    }
+    return {createContext: VM.createContext,
+            runInContext: VM.runInContext};
+  }
+
   var sesFiles = [
     "cheat.js", // XXX
     "logger.js",
@@ -21,7 +28,7 @@ module.exports = (function(){
     "startSES.js",
     "hookupSES.js",
   ];
-  
+
   var sesPlusFiles = [
     "cheat.js", // XXX
     "logger.js",
@@ -34,16 +41,16 @@ module.exports = (function(){
     "ejectorsGuardsTrademarks.js",
     "hookupSESPlus.js",
   ];
-  
+
   var initSESPlus = sesPlusFiles.map(function (path) {
     return FS.readFileSync(path, 'utf8');
   }).join('\n') + `
 cajaVM;
 `;
-  
-  var global = {};
-  global.console = console;
-  var context = VM.createContext(global);
+
+  var endowments = {console: console,
+                    require: fakeRequire};
+  var context = VM.createContext(endowments);
   var cajaVM = VM.runInContext(initSESPlus, context);
 
   return cajaVM;

@@ -132,6 +132,12 @@ if (!ses) { ses = {}; }
 (function loggerModule() {
   "use strict";
 
+  /////// switches /////////
+
+  var VERBOSE = false;
+
+  //////////////////////////
+
   var logger;
   function logNowhere(str) {}
 
@@ -277,8 +283,14 @@ if (!ses) { ses = {}; }
 
   function defaultReportDiagnosis(severity, status, problemList) {
     var classification = ses.logger.classify(severity);
-    ses.logger[classification.consoleLevel](
-      problemList.length + ' ' + status);
+    if (VERBOSE) {
+      ses.logger[classification.consoleLevel]('\n' +
+        problemList.length + ' ' + status + '. ' + classification.note + '\n' +
+        problemList.sort().join(' ') + '\n');
+    } else {
+      ses.logger[classification.consoleLevel](
+        problemList.length + ' ' + status);
+    }
   }
 
   if (!logger.reportDiagnosis) {
