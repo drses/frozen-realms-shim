@@ -1,5 +1,5 @@
 // Options: --free-variable-checker --require --validate
-/*global navigator, document, DOMException, require*/
+/*global navigator, document, DOMException, require __x*/
 // Copyright (C) 2011 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -3768,8 +3768,63 @@ var ses;
    * which is a node specific bug that prevents global variables from
    * being made non-writable, non-configurable data properties.
    */
-  function test_XXX() {
-    return true;
+  function test_CANT_FREEZE_GLOBAL_DATA_PROPERTY() {
+    var result = inFreshRealm(function(window) {
+      return window.eval('(' + function(window) {
+        "use strict";
+        window.__x = 10;
+        Object.defineProperty(window, '__x', {
+          value: 20,
+          writable: false,
+          enumerable: false,
+          configurable: false
+        });
+        try {
+          __x = 30;
+          return 'Unexpected successful assign';
+        } catch (er) {
+          if (!(er instanceof TypeError)) {
+            return 'Unexpected ' + er;
+          }
+        }
+        var desc = Object.getOwnPropertyDescriptor(window, '__x');
+        return __x !== 20 || desc.value !== 20 ||
+          desc.writable || desc.enumerable || desc.configurable;
+      } + ')')(window);
+    });
+    return result === void 0 ? false : result;
+  }
+
+  /**
+   * Tests for https://github.com/nodejs/node/issues/5679
+   * which is a node specific bug that prevents global variables from
+   * being made non-writable, non-configurable data properties.
+   */
+  function test_CANT_FREEZE_GLOBAL_ACCESSOR_PROPERTY() {
+    var result = inFreshRealm(function(window) {
+      return window.eval('(' + function(window) {
+        "use strict";
+        window.__x = 10;
+        Object.defineProperty(window, '__x', {
+          get: function() { return 20; },
+          set: void 0,
+          enumerable: false,
+          configurable: false
+        });
+        try {
+          __x = 30;
+          return 'Unexpected successful assign';
+        } catch (er) {
+          if (!(er instanceof TypeError)) {
+            return 'Unexpected ' + er;
+          }
+        }
+        var desc = Object.getOwnPropertyDescriptor(window, '__x');
+        return __x !== 20 || typeof desc.get !== 'function' ||
+          desc.set !== void 0 || desc.enumerable || desc.configurable;
+      } + ')')(window);
+    });
+    return result === void 0 ? false : result;
   }
 
 
@@ -5854,11 +5909,23 @@ var ses;
       tests: []
     },
     {
-      id: 'XXX',
-      description: 'xxx',
-      test: test_XXX,
+      id: 'CANT_FREEZE_GLOBAL_DATA_PROPERTY',
+      description: 'Can\'t freeze global data property',
+      test: test_CANT_FREEZE_GLOBAL_DATA_PROPERTY,
       repair: void 0,
-      preSeverity: severities.UNSAFE_SPEC_VIOLATION,
+      preSeverity: severities.SAFE_SPEC_VIOLATION,
+      canRepair: false,
+      urls: ['https://github.com/nodejs/node/issues/5679',
+             'https://github.com/nodejs/node/issues/5344'],
+      sections: [],
+      tests: []
+    },
+    {
+      id: 'CANT_FREEZE_GLOBAL_ACCESSOR_PROPERTY',
+      description: 'Can\'t freeze global accessor property',
+      test: test_CANT_FREEZE_GLOBAL_ACCESSOR_PROPERTY,
+      repair: void 0,
+      preSeverity: severities.SAFE_SPEC_VIOLATION,
       canRepair: false,
       urls: ['https://github.com/nodejs/node/issues/5679',
              'https://github.com/nodejs/node/issues/5344'],
