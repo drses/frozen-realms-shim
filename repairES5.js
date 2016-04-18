@@ -1,5 +1,5 @@
 // Options: --free-variable-checker --require --validate
-/*global navigator, document, DOMException, require __x*/
+/*global navigator, document, DOMException, require __x __y*/
 // Copyright (C) 2011 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -3789,7 +3789,7 @@ var ses;
         }
         var desc = Object.getOwnPropertyDescriptor(window, '__x');
         return __x !== 20 || desc.value !== 20 ||
-          desc.writable || desc.enumerable || desc.configurable;
+          desc.writable || desc.configurable;
       } + ')')(window);
     });
     return result === void 0 ? false : result;
@@ -3800,28 +3800,43 @@ var ses;
    * which is a node specific bug that prevents global variables from
    * being made non-writable, non-configurable data properties.
    */
-  function test_CANT_FREEZE_GLOBAL_ACCESSOR_PROPERTY() {
+  function test_CANT_FREEZE_GLOBAL_VAR() {
+    try {
+      Function('const __y = 0;');
+    } catch (er) {
+      if (er instanceof SyntaxError) {
+        return false;
+      }
+      return 'Unexpected ' + er;
+    }
     var result = inFreshRealm(function(window) {
       return window.eval('(' + function(window) {
         "use strict";
-        window.__x = 10;
-        Object.defineProperty(window, '__x', {
-          get: function() { return 20; },
-          set: void 0,
-          enumerable: false,
-          configurable: false
-        });
+        window.__y = 10;
+        __y = 11;
+        if (!delete window.__y) {
+          return 'Unexpected __y not deleted';
+        }
+        if ('__y' in window) {
+          return true;
+        }
         try {
-          __x = 30;
+          window.eval('const __y = 20;');
+        } catch (er) {
+          return 'Unexpected ' + er;
+        }
+        try {
+          __y = 30;
           return 'Unexpected successful assign';
         } catch (er) {
           if (!(er instanceof TypeError)) {
             return 'Unexpected ' + er;
           }
         }
-        var desc = Object.getOwnPropertyDescriptor(window, '__x');
-        return __x !== 20 || typeof desc.get !== 'function' ||
-          desc.set !== void 0 || desc.enumerable || desc.configurable;
+        var desc = Object.getOwnPropertyDescriptor(window, '__y');
+        console.log(desc);
+        return __y !== 20 || desc.value !== 20 ||
+          desc.writable || desc.configurable;
       } + ')')(window);
     });
     return result === void 0 ? false : result;
@@ -5921,9 +5936,9 @@ var ses;
       tests: []
     },
     {
-      id: 'CANT_FREEZE_GLOBAL_ACCESSOR_PROPERTY',
-      description: 'Can\'t freeze global accessor property',
-      test: test_CANT_FREEZE_GLOBAL_ACCESSOR_PROPERTY,
+      id: 'CANT_FREEZE_GLOBAL_VAR',
+      description: 'Can\'t freeze global variable',
+      test: test_CANT_FREEZE_GLOBAL_VAR,
       repair: void 0,
       preSeverity: severities.SAFE_SPEC_VIOLATION,
       canRepair: false,
